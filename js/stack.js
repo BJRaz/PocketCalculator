@@ -15,7 +15,14 @@ var Stack = (function() {
             }
         };
         this.first = () => {
-            return internal[internal.length - 1];
+            if(length > 0)
+                return internal[internal.length - 1];
+            return null;
+        }
+        this.last = () => {
+            if(length > 0)
+                return internal[0];
+            return null;
         }
     };
 })();

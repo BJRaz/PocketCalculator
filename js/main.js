@@ -42,9 +42,9 @@
 		 * Base State class
 		 */
 		function State() {	
-			this.operatorEntered = (operator) => { console.log("operator: " + operator); };
-			this.operandEntered = (operand) => { console.log("operand: " + operand); }
-			this.equalsEntered = (equals) => { console.log("equal: " + equals); };			
+			this.operatorEntered = (operator) => { console.log("default action - operator: " + operator); };
+			this.operandEntered = (operand) => { console.log("default action - operand: " + operand); }
+			this.equalsEntered = (equals) => { console.log("default action - equal: " + equals); };			
 		};
 
 		/**
