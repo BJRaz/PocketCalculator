@@ -1,5 +1,6 @@
 
-	function testPostfix() {
+    // TODO - move to some kind of test-framwork...
+    function testPostfix() {
 		var tokens = [5,4, 8,"*","+"];
 		var s = new Stack();
 		for(var i in tokens) 

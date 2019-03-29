@@ -7,6 +7,7 @@
 	function init()
 	{
 		input = $("#display");
+		console.log("Pocketcalculator 0.1")
 		var calculatorContext = new CalculatorContext();
 		calculatorContext.stateChange.push((msg) => console.log(msg));
 		var buttons = document.getElementsByTagName("button");
