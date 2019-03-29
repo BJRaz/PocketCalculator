@@ -1,7 +1,7 @@
 
 	var input = null;
 	var operand = "";
-	var displayBuffer = new Stack();	
+	var displayBuffer = new Array();	
 	var tokens = new Stack();
 	
 	function init()
@@ -121,7 +121,7 @@
 
 			this.operatorEntered = (operator) => {			
 				tokens.push(parseFloat(displayBuffer.join('')));				
-				calculateOperands(tokens, currentOperator);				
+				calculateOperands(tokens, currentOperator);								
 				input.val(tokens.first());
 				state = new OperatorEnteredState(operator);				
 			};
