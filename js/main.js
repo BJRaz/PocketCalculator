@@ -1,15 +1,19 @@
 
 	var input = null;
 	var operand = "";
-	var displayBuffer = new Array();	
+	//var displayBuffer = new Array();	
 	var tokens = new Stack();
 	
 	function init()
 	{
 		input = $("#display");
 		console.log("Pocketcalculator 0.1")
+		
 		var calculatorContext = new CalculatorContext();
+		calculatorContext.addOnInsertListener(updateDisplay);
 		calculatorContext.stateChange.push((msg) => console.log(msg));
+		calculatorContext.reset();
+
 		var buttons = document.getElementsByTagName("button");
 		for(var i=0;i<buttons.length;i++)
 			buttons.item(i).addEventListener("click", calculatorContext.buttonClicked, false);
@@ -17,25 +21,59 @@
 		//	testPostfix();
 	}
 
-	function updateDisplay(){
-		var value = displayBuffer.join('');
+	function updateDisplay(value){				
 		input.val(value);
 	}
+
+	/**
+	 * class DisplayBuffer
+	 */
+	var DisplayBuffer = (function() {
+		var buffer = new Array();
+
+		return function() {
+			this.clear = () => { buffer = new Array() };
+			
+			this.insertChar = (char) => { 
+				buffer.push(char);
+				fireOnInsert(); 
+			};
+
+			this.getValueAsFloat = () => parseFloat(buffer.join(''));
+			
+			this.onInsert = new Array();	
+			
+			this.insertString = (str) => {
+				buffer = str.toString().split('');
+				fireOnInsert();
+			};
+
+			fireOnInsert = () => {						
+				for(var i in this.onInsert)
+					this.onInsert[i](this.getValueAsFloat());
+			};
+			
+		};
+
+		
+
+	})();
 
 	/**
 	 * CalculatorContext
 	 */
 	var CalculatorContext = (function() {
 		var currentOperator = null;
+		var displayBuffer = new DisplayBuffer();
 		
 		// postfix notation calculation...
-		function calculateOperands(s, token) {
-			var op2 = s.pop();var op1 = s.pop(); 
-			switch(token) {
-				case "+": s.push(op1 + op2); break;
-				case "*": s.push(op1 * op2); break;					
-				case "/": s.push(op1 / op2); break;					
-				case "-": s.push(op1 - op2);break;					
+		function doCalculate(stack, operator) {
+			var op2 = stack.pop();var op1 = stack.pop(); 
+			switch(operator) {
+				case "+": stack.push(op1 + op2); break;
+				case "*": stack.push(op1 * op2); break;					
+				case "/": stack.push(op1 / op2); break;					
+				case "-": stack.push(op1 - op2);break;					
 			}
 		};
 
@@ -55,15 +93,15 @@
 			onStateChange("Ready state entered .. ");
 			
 			this.operandEntered = (o) => {
-				displayBuffer = new Array(0);
+				displayBuffer.clear();
 				if(o != "0") {
-					displayBuffer.push(o);
-					updateDisplay();
+					displayBuffer.insertChar(o);
+					
 					state = new Operand1EnteringState();
 					return;
 				}		
-				displayBuffer.push(0);	
-				updateDisplay();
+				displayBuffer.insertChar(0);	
+				
 			}	
 		}
 		ReadyState.prototype = new State;
@@ -73,13 +111,14 @@
 		 */
 		function Operand1EnteringState() {
 			onStateChange("Operand1Entering state entered .. ");
+			
 			this.operandEntered = (o) => {
-				displayBuffer.push(o);
-				updateDisplay();
+				displayBuffer.insertChar(o);				
 			};
+
 			this.operatorEntered = (operator) => {
 				state = new OperatorEnteredState(operator);
-				tokens.push(parseFloat(displayBuffer.join('')));
+				tokens.push(displayBuffer.getValueAsFloat());
 			}
 		}
 		Operand1EnteringState.prototype = new State;
@@ -92,14 +131,13 @@
 			currentOperator = operator;
 			
 			this.operandEntered = (o) => {
-				displayBuffer = new Array(0);
+				displayBuffer.clear();
 				if(o != "0") {
 					state = new Operand2EnteringState();
 					state.operandEntered(o);
 					return;
 				}
-				displayBuffer.push(0);
-				updateDisplay();	
+				displayBuffer.insertChar(0);				
 			};
 
 			this.operatorEntered = (operator) => {				
@@ -115,24 +153,23 @@
 		function Operand2EnteringState() {
 			onStateChange("Operand2Entering state entered .. ");
 			this.operandEntered = (o) => {				
-				displayBuffer.push(o);
-				updateDisplay();				
+				displayBuffer.insertChar(o);					
 			};
 
 			this.operatorEntered = (operator) => {			
-				tokens.push(parseFloat(displayBuffer.join('')));				
-				calculateOperands(tokens, currentOperator);								
-				input.val(tokens.first());
+				tokens.push(displayBuffer.getValueAsFloat());				
+				doCalculate(tokens, currentOperator);												
+				displayBuffer.insertString(tokens.first());		
+															// NB. foreign ref.
 				state = new OperatorEnteredState(operator);				
 			};
 
 			this.equalsEntered = (operator) => {
-				tokens.push(parseFloat(displayBuffer.join('')));				
-				calculateOperands(tokens, currentOperator);				
-				displayBuffer = new Array(0);
-				displayBuffer.push(tokens.pop());
-				updateDisplay();
-				displayBuffer = new Array(0);
+				tokens.push(displayBuffer.getValueAsFloat());				
+				doCalculate(tokens, currentOperator);				
+				displayBuffer.clear();
+				displayBuffer.insertChar(tokens.pop());				
+				displayBuffer.clear();
 				state = new ReadyState();				
 			}
 		}
@@ -141,9 +178,8 @@
 		// -----------------------------------------
 
 		reset = () => {			
-			displayBuffer = new Array(0);
-			displayBuffer.push(0);
-			updateDisplay();
+			displayBuffer.clear();
+			displayBuffer.insertChar(0);			
 			currentOperator = null;
 			state = new ReadyState();
 		};
@@ -195,7 +231,10 @@
 					
 				}
 			};
-			reset();	
+			this.addOnInsertListener = (listener) => {				
+				displayBuffer.onInsert.push(listener);				
+			};	
+			this.reset = reset;
 		}
 	})();
 

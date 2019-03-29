@@ -1,5 +1,5 @@
 
-    // TODO - move to some kind of test-framwork...
+    // TODO - move to some kind of test-framework...
     function testPostfix() {
 		var tokens = [5,4, 8,"*","+"];
 		var s = new Stack();
