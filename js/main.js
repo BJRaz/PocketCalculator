@@ -1,85 +1,167 @@
 
 	var input = null;
 	var operand = "";
-	var displayBuffer = new Array();
-	var stack = new Array();
-
-	var stateReady = true;
-
-	var calc = new Calculator();
-
+	var displayBuffer = new Stack();	
+	var tokens = new Stack();
+	
 	function init()
 	{
-
 		input = $("#display");
-		input.val(0);
+		var calculatorContext = new CalculatorContext();
+		calculatorContext.stateChange.push((msg) => console.log(msg));
 		var buttons = document.getElementsByTagName("button");
 		for(var i=0;i<buttons.length;i++)
-			buttons.item(i).addEventListener("click", CalculatorContext.buttonClicked, false);
+			buttons.item(i).addEventListener("click", calculatorContext.buttonClicked, false);
+		
+		//	testPostfix();
 	}
-	
+
+	function updateDisplay(){
+		var value = displayBuffer.join('');
+		input.val(value);
+	}
+
+	/**
+	 * CalculatorContext
+	 */
 	var CalculatorContext = (function() {
-		function State(){
-			this.enterOperator = (operator) => {
-			       	operand = operator;	
-				console.log(input.val());
-				calc.add(parseInt(input.val()));
-				displayBuffer = new Array();
-				CalculatorContext.setState(new OperatorState());
-				console.log("State: enterOperator -> OperatorState");
-		       	};
+		var currentOperator = null;
+		
+		// postfix notation calculation...
+		function calculateOperands(s, token) {
+			var op2 = s.pop();var op1 = s.pop(); 
+			switch(token) {
+				case "+": s.push(op1 + op2); break;
+				case "*": s.push(op1 * op2); break;					
+				case "/": s.push(op1 / op2); break;					
+				case "-": s.push(op1 - op2);break;					
+			}
+		};
+
+		/**
+		 * Base State class
+		 */
+		function State() {	
+			this.operatorEntered = (operator) => { console.log("operator: " + operator); };
+			this.operandEntered = (operand) => { console.log("operand: " + operand); }
+			this.equalsEntered = (equals) => { console.log("equal: " + equals); };			
+		};
+
+		/**
+		 * ReadyState class extends State
+		 */
+		function ReadyState() {
+			onStateChange("Ready state entered .. ");
 			
-		};
-		
-		function OperatorState() {
-			this.enterOperator = (operator) => { 
-				console.log("OperatorState: enterOperator " + operator);
-				console.log(input.val());
-				if(displayBuffer.length > 0) {
-					switch(operator) {
-						case "+":
-							calc.add(parseInt(input.val()));	
-							break;
-						case "-":
-							calc.subtract(parseInt(input.val()));
-							break;
-						case "*":
-							calc.multiply(parseInt(input.val()));
-							break;
-						case "/":
-							calc.division(parseInt(input.val()));
-							break;
-					}
-					displayBuffer = new Array();
-					input.val(calc.getAccumulator());
+			this.operandEntered = (o) => {
+				displayBuffer = new Array(0);
+				if(o != "0") {
+					displayBuffer.push(o);
+					updateDisplay();
+					state = new Operand1EnteringState();
+					return;
+				}		
+				displayBuffer.push(0);	
+				updateDisplay();
+			}	
+		}
+		ReadyState.prototype = new State;
+
+		/**
+		 * OperandEnteringState extends State
+		 */
+		function Operand1EnteringState() {
+			onStateChange("Operand1Entering state entered .. ");
+			this.operandEntered = (o) => {
+				displayBuffer.push(o);
+				updateDisplay();
+			};
+			this.operatorEntered = (operator) => {
+				state = new OperatorEnteredState(operator);
+				tokens.push(parseFloat(displayBuffer.join('')));
+			}
+		}
+		Operand1EnteringState.prototype = new State;
+
+		/**
+		 * OperatorEnteredState extends State
+		 */
+		function OperatorEnteredState(operator) {
+			onStateChange("OperatorEntered state entered .. ");
+			currentOperator = operator;
+			
+			this.operandEntered = (o) => {
+				displayBuffer = new Array(0);
+				if(o != "0") {
+					state = new Operand2EnteringState();
+					state.operandEntered(o);
+					return;
 				}
-				operand = operator;
+				displayBuffer.push(0);
+				updateDisplay();	
 			};
-		};
 
-		OperatorState.prototype = new State;
+			this.operatorEntered = (operator) => {				
+				currentOperator = operator;
+			}
+		}
+		OperatorEnteredState.prototype = new State;
+
+		/**
+		 * OperandEnteringState extends State
+		 * At this state the currentOperator is set
+		 */
+		function Operand2EnteringState() {
+			onStateChange("Operand2Entering state entered .. ");
+			this.operandEntered = (o) => {				
+				displayBuffer.push(o);
+				updateDisplay();				
+			};
+
+			this.operatorEntered = (operator) => {			
+				tokens.push(parseFloat(displayBuffer.join('')));				
+				calculateOperands(tokens, currentOperator);				
+				input.val(tokens.first());
+				state = new OperatorEnteredState(operator);				
+			};
+
+			this.equalsEntered = (operator) => {
+				tokens.push(parseFloat(displayBuffer.join('')));				
+				calculateOperands(tokens, currentOperator);				
+				displayBuffer = new Array(0);
+				displayBuffer.push(tokens.pop());
+				updateDisplay();
+				displayBuffer = new Array(0);
+				state = new ReadyState();				
+			}
+		}
+		Operand2EnteringState.prototype = new State;
+
+		// -----------------------------------------
+
+		reset = () => {			
+			displayBuffer = new Array(0);
+			displayBuffer.push(0);
+			updateDisplay();
+			currentOperator = null;
+			state = new ReadyState();
+		};
 		
-		function WorkingState() {
-			this.enterOperator = (operator) => { 
-				console.log("Hest operator " + operator);
-				calc.add(parseInt(input.val()));
-				operand = operator;
-				input.val(calc.getAccumulator());
-			};
-		};
-
-		WorkingState.prototype = new State;
-
-
-		var state = new State();
-	
-		return {
-			setState: function(s) {
+		return function() {
+			setState = function(s) {
 				state = s;
-			},
-			buttonClicked: function(elem)
-			{
+			};
+			onStateChange = (msg) => {
+				for(var i in this.stateChange)
+					this.stateChange[i](msg);
+			};	
+			
+			this.stateChange = new Array();
+
+			this.buttonClicked = function(elem)
+			{				
 				var elemId = elem.target.id;
+				console.log(elemId);
 				switch(elemId) {
 					case "1":
 					case "2":
@@ -91,57 +173,31 @@
 					case "8":
 					case "9":
 					case "0":
-						//var value = elem.target.id;
-						
-						displayBuffer.push(elemId);
-						updateDisplay();
-						
-						//state.enterDigit(elemId);
+						state.operandEntered(elemId);						
 						break;
 					case "-":
 					case "*":
 					case "/":
 					case "+": {
-						state.enterOperator(elemId);
-						/*if(stateReady) {
-							// pre: value = input.val
-							stack.push('+');
-							stack.push(parseInt(input.val()));
-							displayBuffer = new Array();
-							updateDisplay();
-							stateReady = !stateReady;
-						} else {
-							stack.push(input.val());
-							var a = parseInt(stack.pop());
-							var b = parseInt(stack.pop());
-							var operand = stack.pop();
-							
-							var result = eval(a+operand+b);
-							displayBuffer = new Array();
-							
-							stack.push('+');
-							stack.push(result);
-		
-							console.log("Not ready");
-						}*/
+						state.operatorEntered(elemId);
 						break;
 					}
 					case "=": {
-						state.enterOperator(elemId);
+						state.equalsEntered(elemId);
 						break;
 					}	
+					case "ca":
+						reset();
+						break;
+					default:
+						alert("Not implemented");
+					
 				}
-			}
-				
+			};
+			reset();	
 		}
 	})();
 
-	function updateDisplay(){
-		var value = displayBuffer.join('');
-		
-		input.val(value);
-		console.log(operand);
-	}
 	
 	
 		
