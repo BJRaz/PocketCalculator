@@ -14,7 +14,7 @@
 			}
 		}
 
-		alert(s.pop());	// should be 37 (5 + ( 4 * 8 ))
+		alert(s.pop());	// should be 37 (5 + (4 * 8))
 
 		tokens = [5,4,"+", 8, "*"];
 		s = new Stack();
@@ -29,9 +29,9 @@
 			}
 		}
 
-		alert(s.pop());	// should be 72 ( 5 + 4 * 8 )
+		alert(s.pop());	// should be 72 (( 5 + 4 ) * 8 ) 
 
-		tokens = [1,2, "-"];
+		tokens = [1,2,"-"];
 		s = new Stack();
 		for(var i in tokens) 
 		{
@@ -44,7 +44,7 @@
 			}
 		}
 
-		alert(s.pop());	// should be 72 ( 5 + 4 * 8 )
+		alert(s.pop());	// should be -1 ( 2 - 1 )
     };
     
     function calculateOperands(s, token) {

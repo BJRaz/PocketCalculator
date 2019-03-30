@@ -85,24 +85,39 @@
          */
         function Operand2EnteringState() {
             onStateChange("Operand2Entering state entered .. ");
+            
+            this.equalsIsEntered = false;
+
             this.operandEntered = (o) => {
-                displayBuffer.insertChar(o);
+                if(!this.equalsIsEntered)
+                    displayBuffer.insertChar(o);
+                else {
+                    
+                    state = new ReadyState();
+                    state.operandEntered(o);
+                }                   
             };
 
             this.operatorEntered = (operator) => {
-                tokens.push(displayBuffer.getValueAsFloat());
-                doCalculate(tokens, currentOperator);
+                if(!this.equalsIsEntered) {
+                    tokens.push(displayBuffer.getValueAsFloat());
+                    doCalculate(tokens, currentOperator);
+                }
                 displayBuffer.insertString(tokens.first());
                 state = new OperatorEnteredState(operator);
+                //} else 
+                //    alert(tokens.pop());               
             };
 
             this.equalsEntered = (operator) => {
+                this.equalsIsEntered = true;
                 tokens.push(displayBuffer.getValueAsFloat());
                 doCalculate(tokens, currentOperator);
                 displayBuffer.clear();
-                displayBuffer.insertChar(tokens.pop());
-                displayBuffer.clear();
-                state = new ReadyState();
+                displayBuffer.insertString(tokens.first());
+                //displayBuffer.clear();
+                //state = new ReadyState();
+                //state = new Operand1EnteringState();
             }
         }
         Operand2EnteringState.prototype = new State;
