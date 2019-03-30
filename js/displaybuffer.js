@@ -21,9 +21,11 @@
 				fireOnInsert();
 			};
 
+			this.getBuffer = () => buffer;
+
 			fireOnInsert = () => {						
 				for(var i in this.onInsert)
-					this.onInsert[i](this.getValueAsFloat());
+					this.onInsert[i](this, this.getValueAsFloat());
 			};
 			
 		};

@@ -4,7 +4,7 @@
 	var CalculatorContext = (function() {
 		var currentOperator = null;
 		var displayBuffer = new DisplayBuffer();
-		var stateChange = new Array();
+		var stateChange = new Array();              // event-listeners
 		var tokens = new Stack();
         var state = null;
         var ctx = null;
@@ -25,11 +25,12 @@
         function ReadyState() {
             
             onStateChange("Ready state entered .. ");
-
-            this.operandEntered = (o) => {
+            tokens = new Stack();
+            
+            this.operandEntered = (operand) => {
                 displayBuffer.clear();
-                if (o != "0") {
-                    displayBuffer.insertChar(o);
+                if (operand != "0") {
+                    displayBuffer.insertChar(operand);
 
                     state = new Operand1EnteringState();
                     return;
@@ -45,8 +46,8 @@
         function Operand1EnteringState() {
             onStateChange("Operand1Entering state entered .. ");
 
-            this.operandEntered = (o) => {
-                displayBuffer.insertChar(o);
+            this.operandEntered = (operand) => {
+                displayBuffer.insertChar(operand);
             };
 
             this.operatorEntered = (operator) => {
@@ -63,11 +64,11 @@
             onStateChange("OperatorEntered state entered .. ");
             currentOperator = operator;
 
-            this.operandEntered = (o) => {
+            this.operandEntered = (operand) => {
                 displayBuffer.clear();
-                if (o != "0") {
+                if (operand != "0") {
                     state = new Operand2EnteringState();
-                    state.operandEntered(o);
+                    state.operandEntered(operand);
                     return;
                 }
                 displayBuffer.insertChar(0);
@@ -88,13 +89,14 @@
             
             this.equalsIsEntered = false;
 
-            this.operandEntered = (o) => {
+            this.operandEntered = (operand) => {
+                
                 if(!this.equalsIsEntered)
-                    displayBuffer.insertChar(o);
+                    displayBuffer.insertChar(operand);
                 else {
                     
                     state = new ReadyState();
-                    state.operandEntered(o);
+                    state.operandEntered(operand);
                 }                   
             };
 
@@ -108,13 +110,26 @@
                 //} else 
                 //    alert(tokens.pop());               
             };
-
+            this.first = 0;
             this.equalsEntered = (operator) => {
-                this.equalsIsEntered = true;
-                tokens.push(displayBuffer.getValueAsFloat());
-                doCalculate(tokens, currentOperator);
-                displayBuffer.clear();
-                displayBuffer.insertString(tokens.first());
+                if(!this.equalsIsEntered) {
+                    this.equalsIsEntered = true;
+                    this.last = tokens.last();
+                    
+                    tokens.push(displayBuffer.getValueAsFloat());
+                    this.first = tokens.first();
+                    doCalculate(tokens, currentOperator);
+                    displayBuffer.clear();
+                    displayBuffer.insertString(tokens.first());
+                } else {
+                    //alert(this.first + " " + tokens.first() + " " + tokens.last());
+                    tokens.push(this.first);
+                    doCalculate(tokens, currentOperator);
+                    displayBuffer.clear();
+                    displayBuffer.insertString(tokens.first());
+                }
+                tokens.list();
+                
                 //displayBuffer.clear();
                 //state = new ReadyState();
                 //state = new Operand1EnteringState();
@@ -138,7 +153,8 @@
 		reset = () => {			
 			displayBuffer.clear();
 			displayBuffer.insertChar(0);			
-			currentOperator = null;
+            currentOperator = null;
+            
 			state = new ReadyState();
 		};
 		
@@ -150,9 +166,11 @@
 
 			onStateChange = (msg) => {
 				for(var i in stateChange)
-					stateChange[i](msg);
+					stateChange[i](this, msg);
 			};	
-			
+            
+            this.tokens = tokens;
+
 			this.buttonClicked = function(elem)
 			{				
 				var elemId = elem.target.id;
