@@ -1,7 +1,10 @@
 var Stack = (function() {
-    var internal = new Array(0);
+    var internal = null;
     
     return function() {
+        
+        internal = new Array(0);
+
         this.pop = () => {
             return internal.pop();
         };    
