@@ -1,18 +1,18 @@
 
 	var input = null;
 	var operand = "";
-	//var displayBuffer = new Array();	
-	
+	let calculatorContext = null;
 	
 	function init()
 	{
 		input = $("#display");
-		console.log("Pocketcalculator 0.1")
+		console.log("*******\nPocketcalculator 0.1\nBrian J. Rasmussen 2021\n*******")
 		
-		var calculatorContext = new CalculatorContext();
+		calculatorContext = new CalculatorContext();
 		calculatorContext.addOnInsertListener(updateDisplay);
 		calculatorContext.addStateChangeListener((sender, msg) => {
 			console.log(msg);
+			sender.context.listTokens();
 		});
 		calculatorContext.reset();
 		
@@ -20,11 +20,11 @@
 		for(var i=0;i<buttons.length;i++)
 			buttons.item(i).addEventListener("click", calculatorContext.buttonClicked, false);
 		
-			//testPostfix();
+		//tests.testPostfix();
+		
 	}
 
 	function updateDisplay(sender, value){				
-		console.log(sender.getBuffer());
 		input.val(value);
 	}
 

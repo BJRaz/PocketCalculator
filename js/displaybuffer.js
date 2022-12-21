@@ -2,19 +2,25 @@
 	 * class DisplayBuffer
 	 */
 	var DisplayBuffer = (function() {
-		var buffer = new Array();
+		let buffer = new Array();
+		let onInsert = new Array();	
+
+		fireOnInsert = () => {						
+			for(var i in onInsert)
+				onInsert[i](this, valueAsFloat());
+		};
+
+		valueAsFloat = () => (buffer.join(''));
 
 		return function() {
 			this.clear = () => { buffer = new Array() };
+			
+			this.getValueAsFloat = valueAsFloat;
 			
 			this.insertChar = (char) => { 
 				buffer.push(char);
 				fireOnInsert(); 
 			};
-
-			this.getValueAsFloat = () => parseFloat(buffer.join(''));
-			
-			this.onInsert = new Array();	
 			
 			this.insertString = (str) => {
 				buffer = str.toString().split('');
@@ -23,11 +29,9 @@
 
 			this.getBuffer = () => buffer;
 
-			fireOnInsert = () => {						
-				for(var i in this.onInsert)
-					this.onInsert[i](this, this.getValueAsFloat());
-			};
-			
+			this.addOnInsertListener = (listener) => {
+				onInsert[onInsert.length] = listener;
+			}
 		};
 
 	})();

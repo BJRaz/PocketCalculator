@@ -1,33 +1,36 @@
-var Stack = (function() {
-    var internal = null;
+var Stack = function() {
+     
+    let internal = new Array(0);
     
-    return function() {
-        
-        internal = new Array(0);
+    this.pop = () => {
+        return internal.pop();
+    };    
+    
+    this.push = (item) => {
+        internal.push(item);
+    }
 
-        this.pop = () => {
-            return internal.pop();
-        };    
-        this.push = (item) => {
-            internal.push(item);
-        };
-        this.list = () => {
-            for(var i in internal)
-            {
-                console.log(internal[i] + "," + i);
-            }
-        };
-        this.first = () => {
-            if(internal.length > 0)
-                return internal[internal.length - 1];
-            return null;
-        }
-        this.last = () => {
-            if(internal.length > 0)
-                return internal[0];
-            return null;
+    this.toString = () => {
+        for(var i in internal)
+        {
+            console.log('[' + i + '] = ' + internal[i]);
         }
     };
-})();
 
+    this.first = () => {
+        if(internal.length > 0)
+            return internal[internal.length - 1];
+        return null;
+    }
+    
+    this.last = () => {
+        if(internal.length > 0)
+            return internal[0];
+        return null;
+    }
+    
+    this.isEmpty = () => {
+        return internal.length === 0;
+    }
+}
 

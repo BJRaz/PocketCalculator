@@ -26,24 +26,10 @@ var Calculator = (function(){
 		this.clear = () => accumulator = 0;
 	};
 })();
-/*
 
-   var x = new Calculator();
+var Node = function(v) {
+	this.left = null;
+	this.right = null;
+	this.value = v;
+};
 
-   CalculatorContext.add(10);
-
-
-CalculatorContext.add(10);
-
-CalculatorContext.add(10);
-
-CalculatorContext.subtract(20);
-
-CalculatorContext.multiply(2);
-
-CalculatorContext.division(5);
-
-CalculatorContext.hest = 200;
-
-console.log(CalculatorContext.getAccumulator());
-*/
