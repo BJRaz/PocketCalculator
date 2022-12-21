@@ -13,8 +13,8 @@
 				calculateOperands(s, token);
 			}
 		}
-
-		alert(s.pop());	// should be 37 (5 + (4 * 8))
+		var result = s.pop();
+		alert('Result (5 + (4 * 8): ' + result + ' Passed: ' + (result == 37));	// should be 37 (5 + (4 * 8))
 
 		tokens = [5,4,"+", 8, "*"];
 		s = new Stack();
@@ -28,8 +28,8 @@
 				calculateOperands(s, token);
 			}
 		}
-
-		alert(s.pop());	// should be 72 (( 5 + 4 ) * 8 ) 
+		result = s.pop();
+		alert('Result (( 5 + 4 ) * 8 ): ' + result + ' Passed: ' + (result == 72));	// should be 72 (( 5 + 4 ) * 8 ) 
 
 		tokens = [1,2,"-"];
 		s = new Stack();
@@ -43,8 +43,8 @@
 				calculateOperands(s, token);
 			}
 		}
-
-		alert(s.pop());	// should be -1 ( 2 - 1 )
+		result = s.pop();
+		alert('Result ( 2 - 1 ): ' + result + ' Passed: ' + (result == -1));		// should be -1 ( 2 - 1 )
     };
     
     function calculateOperands(s, token) {

@@ -20,7 +20,7 @@
 		for(var i=0;i<buttons.length;i++)
 			buttons.item(i).addEventListener("click", calculatorContext.buttonClicked, false);
 		
-			//testPostfix();
+			testPostfix();
 	}
 
 	function updateDisplay(sender, value){				
