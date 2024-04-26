@@ -10,7 +10,7 @@ export let CalculatorContext = (function () {
     var tokens = null;                      // the combined operands into number tokens i.e. 42, 17.5 etc.
     var state = null;
     var ctx = null;
-    var newestoperator = '';                // newest operator
+
 
     /**
      * Base State class
@@ -93,8 +93,6 @@ export let CalculatorContext = (function () {
             if(!this.operator) return;
             // do '=' stuff
             operatorStack.push(this.operator);  
-            // console.log('operator handler - equalsEntered called')
-            // console.log(tokens.toString());
             tokens.push(this.token);
             doCalculate(tokens);
             displayBuffer.clear();
@@ -123,27 +121,21 @@ export let CalculatorContext = (function () {
         };
 
         this.operatorEntered = (operator) => {
-            if (!this.equalsIsEntered) {
-                tokens.push(displayBuffer.getValueAsFloat());
-                doCalculate(tokens);
-            }
-            displayBuffer.insertString(tokens.top());
+
+            // at this state to operands exists 
             state = new OperatorEnteredState();
-            state.operatorEntered(operator)
+            state.operatorEntered(operator);
+            doCalculate(tokens);
+            displayBuffer.clear();
+            displayBuffer.insertString(tokens.top());
         };
 
         this.equalsEntered = (operator) => {
-            if (!this.equalsIsEntered) {
-                this.equalsIsEntered = !this.equalsIsEntered;
-                this.bottomToken = tokens.bottom();
-                tokens.push(displayBuffer.getValueAsFloat());
-                this.topToken = tokens.top();
-            } else {
-                tokens.push(this.topToken);
-                operatorStack.push(newestoperator);
-            }
+            state = new OperatorEnteredState();
+            state.operatorEntered(operatorStack.top());
             doCalculate(tokens);
             displayBuffer.clear();
+            
             displayBuffer.insertString(tokens.top());
             console.log(tokens);
         }
@@ -156,7 +148,6 @@ export let CalculatorContext = (function () {
     function doCalculate(tokensstack) {
         
         let operator = operatorStack.pop();
-        newestoperator = operator;
         do {
             var op2 = parseFloat(tokensstack.pop());
             var op1 = parseFloat(tokensstack.pop());
@@ -165,6 +156,8 @@ export let CalculatorContext = (function () {
                 case "*": tokensstack.push(op1 * op2); break;
                 case "/": tokensstack.push(op1 / op2); break;
                 case "-": tokensstack.push(op1 - op2); break;
+                default:
+                    throw new Error('Operator not accepted: "' + operator + '"')
             }
         } while (operator = operatorStack.pop());
     };
