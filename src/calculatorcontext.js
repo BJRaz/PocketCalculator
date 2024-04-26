@@ -52,22 +52,14 @@ export let CalculatorContext = (function () {
     function Operand1EnteringState() {
         this.context = ctx;
         onStateChange(this, "Operand One Entering State");
-        let hasDot = false;
-
 
         this.operandEntered = (operand) => {
-            if (!hasDot && operand === '.')
-                hasDot = true;
-            else if (hasDot && operand === '.')
-                return;
             displayBuffer.insertChar(operand);
-
         };
-
         this.operatorEntered = (operator) => {
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
-            tokens.push(displayBuffer.getValueAsFloat());
+            
         }
     }
     Operand1EnteringState.prototype = new State;
@@ -79,6 +71,8 @@ export let CalculatorContext = (function () {
         this.context = ctx;
         onStateChange(this, "Operator Entered State");
         this.operator = null;
+        this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
+        tokens.push(this.token);
 
         this.operandEntered = (operand) => {
             displayBuffer.clear();
@@ -92,14 +86,19 @@ export let CalculatorContext = (function () {
         };
 
         this.operatorEntered = (operator) => {
-            // operatorStack.push(operator);
             this.operator = operator;
         }
 
         this.equalsEntered = (operator) => {
             if(!this.operator) return;
             // do '=' stuff
-            
+            operatorStack.push(this.operator);  
+            // console.log('operator handler - equalsEntered called')
+            // console.log(tokens.toString());
+            tokens.push(this.token);
+            doCalculate(tokens);
+            displayBuffer.clear();
+            displayBuffer.insertString(tokens.top());
         }
     }
     OperatorEnteredState.prototype = new State;
@@ -115,10 +114,6 @@ export let CalculatorContext = (function () {
         let hasDot = this.equalsIsEntered = false;
 
         this.operandEntered = (operand) => {
-            if (!hasDot && operand === '.')
-                hasDot = true;
-            else if (hasDot && operand === '.')
-                return;
             if (!this.equalsIsEntered)
                 displayBuffer.insertChar(operand);
             else {
@@ -131,19 +126,8 @@ export let CalculatorContext = (function () {
             if (!this.equalsIsEntered) {
                 tokens.push(displayBuffer.getValueAsFloat());
                 doCalculate(tokens);
-                // switch (operatorStack[operatorStack.length - 1]) {
-                //     case '-':
-                //     case '+':
-                //         {
-                //             break;
-                //         }
-                //     default:
-                //         {
-                            
-                //         }
-                // }
             }
-            displayBuffer.insertString(tokens.first());
+            displayBuffer.insertString(tokens.top());
             state = new OperatorEnteredState();
             state.operatorEntered(operator)
         };
@@ -151,17 +135,17 @@ export let CalculatorContext = (function () {
         this.equalsEntered = (operator) => {
             if (!this.equalsIsEntered) {
                 this.equalsIsEntered = !this.equalsIsEntered;
-                this.bottomToken = tokens.last();
+                this.bottomToken = tokens.bottom();
                 tokens.push(displayBuffer.getValueAsFloat());
-                this.topToken = tokens.first();
+                this.topToken = tokens.top();
             } else {
                 tokens.push(this.topToken);
                 operatorStack.push(newestoperator);
             }
             doCalculate(tokens);
             displayBuffer.clear();
-            displayBuffer.insertString(tokens.first());
-            tokens.toString();
+            displayBuffer.insertString(tokens.top());
+            console.log(tokens);
         }
     }
     Operand2EnteringState.prototype = new State;

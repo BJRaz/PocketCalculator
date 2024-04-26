@@ -1,4 +1,4 @@
-export let Stack = function () {
+export function Stack() {
 
     let internal = new Array(0);
 
@@ -10,16 +10,14 @@ export let Stack = function () {
         internal.push(item);
     }
 
-    
-
-    this.first = () => {
+    this.top = () => {
         if (internal.length > 0)
             return internal[internal.length - 1];
         return null;
     }
 
-    this.last = () => {
-        if (internal.length > 0)
+    this.bottom = () => {
+        if (!this.isEmpty())
             return internal[0];
         return null;
     }
@@ -27,10 +25,12 @@ export let Stack = function () {
     this.isEmpty = () => {
         return internal.length === 0;
     }
-}
 
-Stack.prototype.toString = () => {
-    for (var i in internal) {
-        console.log('[' + i + '] = ' + internal[i]);
-    }
-};
+    this.toString = () => {
+        var str = [];
+        for (var i in internal) {
+            str.push(('[' + i + '] = ' + internal[i]) + ",");
+        }
+        return str.join(',');
+    };
+}

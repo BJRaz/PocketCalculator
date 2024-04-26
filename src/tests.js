@@ -1,6 +1,8 @@
 // TODO - move to some kind of test-framework...
+import { Stack } from './stack';
+import { Node } from './command';
 
-var tests = (function () {
+export const tests = (function () {
 	var infixStr = "";
 
 	var calculateOperands = (s, token) => {
@@ -112,3 +114,9 @@ var tests = (function () {
 
 })();
 
+function runtest() {
+
+	tests.testPostfix();
+}
+
+runtest();
