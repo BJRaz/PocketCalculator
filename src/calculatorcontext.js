@@ -191,8 +191,7 @@ export let CalculatorContext = (function () {
             stateChangeListeners[i](state, msg);
     };
 
-    let buttonClicked = function (elem) {
-        var elemId = elem.target.id;
+    let buttonClicked = function (elemId) {
 
         switch (elemId) {
             case "0":

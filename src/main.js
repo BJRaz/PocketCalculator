@@ -23,7 +23,7 @@ function init() {
 
 	var buttons = document.getElementsByTagName("button");
 	for (var i = 0; i < buttons.length; i++)
-		buttons.item(i).addEventListener("click", calculatorContext.buttonClicked, false);
+		buttons.item(i).addEventListener("click", (elem) => calculatorContext.buttonClicked(elem.target.id), false);
 
 	//tests.testPostfix();
 
