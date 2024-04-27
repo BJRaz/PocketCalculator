@@ -22,8 +22,6 @@ export let CalculatorContext = (function () {
         this.context = new Object();
     };
 
-
-
     /**
      * ReadyState class extends State
      */
@@ -40,9 +38,7 @@ export let CalculatorContext = (function () {
                 state.operandEntered(operand);
                 return;
             }
-
         }
-
     }
     ReadyState.prototype = new State;
 
@@ -73,8 +69,15 @@ export let CalculatorContext = (function () {
         this.operator = null;
         this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
         tokens.push(this.token);
+        this.equalsentered = false;
 
         this.operandEntered = (operand) => {
+            if(this.equalsentered)
+            {
+                state = new ReadyState();
+                state.operandEntered(operand);
+                return;
+            }
             displayBuffer.clear();
             if (operand != "0") {
                 operatorStack.push(this.operator);
@@ -86,10 +89,14 @@ export let CalculatorContext = (function () {
         };
 
         this.operatorEntered = (operator) => {
+            console.log(operator);
+            if(this.equalsentered) this.equalsentered = !this.equalsentered;
+            
             this.operator = operator;
         }
 
         this.equalsEntered = (operator) => {
+            if(!this.equalsentered) this.equalsentered = !this.equalsentered;
             if(!this.operator) return;
             // do '=' stuff
             operatorStack.push(this.operator);  
@@ -107,9 +114,10 @@ export let CalculatorContext = (function () {
      */
     function Operand2EnteringState() {
         this.context = ctx;
+        this.operator = null;
         this.topToken = this.bottomToken = 0;
         onStateChange(this, "Operand Two Entering State");
-        let hasDot = this.equalsIsEntered = false;
+        this.equalsIsEntered = false;
 
         this.operandEntered = (operand) => {
             if (!this.equalsIsEntered)
@@ -121,8 +129,14 @@ export let CalculatorContext = (function () {
         };
 
         this.operatorEntered = (operator) => {
-
             // at this state to operands exists 
+            if(this.equalsIsEntered) {
+                // result is allready in the tokens variable.
+                console.log('do stuff');
+                state = new Operand1EnteringState();
+                state.operatorEntered(operator);
+                return;
+            }
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
             doCalculate(tokens);
@@ -131,13 +145,16 @@ export let CalculatorContext = (function () {
         };
 
         this.equalsEntered = (operator) => {
-            state = new OperatorEnteredState();
-            state.operatorEntered(operatorStack.top());
+            if(!this.equalsIsEntered) {
+                this.topToken = displayBuffer.getValueAsFloat();
+                this.operator = operatorStack.pop();
+                this.equalsIsEntered=!this.equalsIsEntered;
+            }
+            operatorStack.push(this.operator);
+            tokens.push(this.topToken);
             doCalculate(tokens);
             displayBuffer.clear();
-            
             displayBuffer.insertString(tokens.top());
-            console.log(tokens);
         }
     }
     Operand2EnteringState.prototype = new State;
