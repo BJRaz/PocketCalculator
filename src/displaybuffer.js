@@ -1,7 +1,7 @@
 /**
  * class DisplayBuffer
  */
-export let DisplayBuffer = (function () {
+let DisplayBuffer = (function () {
 	let buffer = new Array();
 	let onInsert = new Array();
 	let hasDot = false;
@@ -44,3 +44,4 @@ export let DisplayBuffer = (function () {
 
 })();
 
+module.exports = DisplayBuffer;

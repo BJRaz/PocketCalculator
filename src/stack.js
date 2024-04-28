@@ -1,4 +1,4 @@
-export function Stack() {
+function Stack() {
 
     let internal = new Array(0);
 
@@ -34,3 +34,5 @@ export function Stack() {
         return str.join(',');
     };
 }
+
+module.exports = Stack;

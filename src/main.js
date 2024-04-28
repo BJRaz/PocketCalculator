@@ -1,8 +1,13 @@
 
-import { CalculatorContext } from './calculatorcontext';
-// import { CalculatorContext } from './testmodule';
+// import { CalculatorContext } from './calculatorcontext';
+// // import { CalculatorContext } from './testmodule';
+// import './css/styles.css';
+// import { DisplayBuffer } from './displaybuffer';
+
+const CalculatorContext = require('./calculatorcontext');
+const DisplayBuffer = require('./displaybuffer');
 import './css/styles.css';
-import { DisplayBuffer } from './displaybuffer';
+
 
 var input = null;
 var operand = "";

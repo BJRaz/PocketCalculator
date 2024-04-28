@@ -1,16 +1,15 @@
-import { Stack } from './stack';
-
+//import { Stack } from './stack';
+const Stack = require('./stack'); 
 /**
  * CalculatorContext
  */
-export let CalculatorContext = (function () {
+let CalculatorContext = (function () {
     var operatorStack = null;               // this is an array operating as a stack
     var displayBuffer = null;               // new DisplayBuffer();
     var stateChangeListeners = [];          // event-listeners
-    var tokens = null;                      // the combined operands into number tokens i.e. 42, 17.5 etc.
+    var tokens = [];                      // the combined operands into number tokens i.e. 42, 17.5 etc.
     var state = null;
     var ctx = null;
-
 
     /**
      * Base State class
@@ -242,8 +241,10 @@ export let CalculatorContext = (function () {
         this.listTokens = () => {
             tokens.toString();
         }
+        this.getTokens = () => tokens;
     }
 })();
 
 
 
+module.exports = CalculatorContext;
