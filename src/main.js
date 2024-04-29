@@ -14,7 +14,7 @@ var operand = "";
 let calculatorContext = null;
 
 function init() {
-	input = $("#display");
+	input = document.getElementById("display");
 	console.log("*******\nPocketcalculator 0.1\nBrian J. Rasmussen 2021\n*******")
 
 	calculatorContext = new CalculatorContext(new DisplayBuffer());
@@ -37,7 +37,7 @@ function init() {
 window.onload = init;
 
 function updateDisplay(sender, value) {
-	input.val(value);
+	input.value = (value);
 }
 
 

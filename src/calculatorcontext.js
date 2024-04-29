@@ -1,5 +1,5 @@
 //import { Stack } from './stack';
-const Stack = require('./stack'); 
+const Stack = require('./stack');
 /**
  * CalculatorContext
  */
@@ -14,104 +14,113 @@ let CalculatorContext = (function () {
     /**
      * Base State class
      */
-    function State() {
-        this.operatorEntered = (operator) => { console.log("default action - operator: " + operator); };
-        this.operandEntered = (operand) => { console.log("default action - operand: " + operand); }
-        this.equalsEntered = (equals) => { console.log("default action - equal: " + equals); };
-        this.context = new Object();
+    class State {
+        constructor() {
+            this.operatorEntered = (operator) => { console.log("default action - operator: " + operator); };
+            this.operandEntered = (operand) => { console.log("default action - operand: " + operand); };
+            this.equalsEntered = (equals) => { console.log("default action - equal: " + equals); };
+        }
     };
 
     /**
      * ReadyState class extends State
      */
-    function ReadyState() {
-        onStateChange(ctx, "Ready State Entered");
-        tokens = new Stack();
-        operatorStack = new Stack();
+    class ReadyState extends State {
+        constructor() {
+            super();
+            onStateChange(ctx, "Ready State Entered");
+            tokens = new Stack();
+            operatorStack = new Stack();
+        }
 
-        this.operandEntered = (operand) => {
+        operandEntered = (operand) => {
             displayBuffer.clear();
             state = new Operand1EnteringState();
             state.operandEntered(operand);
-        }
+        };
     }
-    ReadyState.prototype = new State;
 
     /**
      * OperandEnteringState extends State
      */
-    function Operand1EnteringState() {
-        onStateChange(ctx, "Operand One State Entered");
+    class Operand1EnteringState extends State {
+        constructor() {
+            super();
+            onStateChange(ctx, "Operand One State Entered");
+        }
 
-        this.operandEntered = (operand) => {
+        operandEntered = (operand) => {
             displayBuffer.insertChar(operand);
         };
-        this.operatorEntered = (operator) => {
+
+        operatorEntered = (operator) => {
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
-        }
+        };
     }
-    Operand1EnteringState.prototype = new State;
 
     /**
      * OperatorEnteredState extends State
      */
-    function OperatorEnteredState(operator) {
-        onStateChange(ctx, "Operator State Entered");
-        this.operator = null;
-        this.equalsentered = false;
-        
-        this.operatorEntered(operator);
+    class OperatorEnteredState extends State {
+        constructor(operator) {
+            super();
+            onStateChange(ctx, "Operator State Entered");
+            this.operator = null;
+            this.equalsentered = false;
+        }
 
-        this.operandEntered = (operand) => {
+        operandEntered = (operand) => {
             displayBuffer.clear();
             operatorStack.push(this.operator);
             state = new Operand2EnteringState();
             state.operandEntered(operand);
         };
 
-        this.operatorEntered = (operator) => {
-            this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
+        operatorEntered = (operator) => {
+            this.token = displayBuffer.getValueAsFloat(); // store the token from previous state
             tokens.push(this.token);
             this.operator = operator;
-        }
+        };
 
-        this.equalsEntered = (operator) => {
-            if(!this.equalsentered) {
+        equalsEntered = (operator) => {
+            if (!this.equalsentered) {
                 this.equalsentered = !this.equalsentered;
-                this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
+                this.token = displayBuffer.getValueAsFloat(); // store the token from previous state
                 tokens.push(this.token);
-            } 
+            }
             // do '=' stuff
-            operatorStack.push(this.operator);  
+            operatorStack.push(this.operator);
             tokens.push(this.token);
             doCalculate(tokens);
             displayBuffer.clear();
             displayBuffer.insertString(tokens.top());
-        }
+        };
     }
-    OperatorEnteredState.prototype = new State;
 
     /**
      * OperandEnteringState extends State
      * At this state the currentOperator is set
      */
-    function Operand2EnteringState() {
-        onStateChange(ctx, "Operand Two State Entered");
-        this.operator = null;
-        this.topToken = 0;
-        this.equalsIsEntered = false;
+    class Operand2EnteringState extends State {
+        constructor() {
+            super();
+            onStateChange(ctx, "Operand Two State Entered");
+            this.operator = null;
+            this.topToken = 0;
+            this.equalsIsEntered = false;
+        }
 
-        this.operandEntered = (operand) => {
+        operandEntered = (operand) => {
             if (!this.equalsIsEntered)
                 return displayBuffer.insertChar(operand);
             state = new ReadyState();
             state.operandEntered(operand);
         };
 
-        this.operatorEntered = (operator) => {
+        operatorEntered = (operator) => {
             // at this state to operands exists 
-            if(this.equalsIsEntered) {
+            if (this.equalsIsEntered) {
                 // result is allready in the tokens variable.
                 state = new Operand1EnteringState();
                 return state.operatorEntered(operator);
@@ -123,11 +132,11 @@ let CalculatorContext = (function () {
             displayBuffer.insertString(tokens.top());
         };
 
-        this.equalsEntered = (operator) => {
-            if(!this.equalsIsEntered) {
-                if(operatorStack.isEmpty())
-                    throw new Error('Operator stack must npt be empty!')
-                this.equalsIsEntered=!this.equalsIsEntered;
+        equalsEntered = (operator) => {
+            if (!this.equalsIsEntered) {
+                if (operatorStack.isEmpty())
+                    throw new Error('Operator stack must npt be empty!');
+                this.equalsIsEntered = !this.equalsIsEntered;
                 this.topToken = displayBuffer.getValueAsFloat();
                 this.operator = operatorStack.pop();
             }
@@ -136,19 +145,18 @@ let CalculatorContext = (function () {
             doCalculate(tokens);
             displayBuffer.clear();
             displayBuffer.insertString(tokens.top());
-        }
+        };
     }
-    Operand2EnteringState.prototype = new State;
 
     // -----------------------------------------
 
     // postfix notation calculation...
     function doCalculate(tokensstack) {
-        if(tokensstack.isEmpty())
+        if (tokensstack.isEmpty())
             throw new Error('doCalculate: Can\'t calculate on an empty stack of tokens');
-        if(operatorStack.isEmpty())
+        if (operatorStack.isEmpty())
             throw new Error('doCalculate: Can\'t calculate on an empty stack of operators')
-        
+
         do {
             let operator = operatorStack.pop();
             let op2 = parseFloat(tokensstack.pop());
@@ -230,7 +238,5 @@ let CalculatorContext = (function () {
         this.getTokens = () => tokens;
     }
 })();
-
-
 
 module.exports = CalculatorContext;

@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [known bugs]
 - At readystate, enter operand (i.e. 9), then operator (i.e. *), then equals (=), the calculation does not calculate 9*9, but does nothing. Equals handler in operator entered state is not implemented.
 
+## [0.2.0] - 2019-04-10
+### Added
+- first release
 
 ## [0.1.0] - 2019-04-10
 ### Added

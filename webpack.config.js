@@ -36,7 +36,10 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin(
             {
-                title:'OutputManagement',
+                inject: true,
+                hash: true,
+                title:'PocketCalculator',
+                version: '0.2.0',
                 template: 'src/index.html'
             }
         )
