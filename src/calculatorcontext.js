@@ -25,18 +25,14 @@ let CalculatorContext = (function () {
      * ReadyState class extends State
      */
     function ReadyState() {
+        onStateChange(ctx, "Ready State Entered");
         tokens = new Stack();
         operatorStack = new Stack();
-        this.context = ctx;
-        onStateChange(this, "Ready State Entered");
 
         this.operandEntered = (operand) => {
             displayBuffer.clear();
-            if (operand) {
-                state = new Operand1EnteringState();
-                state.operandEntered(operand);
-                return;
-            }
+            state = new Operand1EnteringState();
+            state.operandEntered(operand);
         }
     }
     ReadyState.prototype = new State;
@@ -45,8 +41,7 @@ let CalculatorContext = (function () {
      * OperandEnteringState extends State
      */
     function Operand1EnteringState() {
-        this.context = ctx;
-        onStateChange(this, "Operand One State Entered");
+        onStateChange(ctx, "Operand One State Entered");
 
         this.operandEntered = (operand) => {
             displayBuffer.insertChar(operand);
@@ -54,7 +49,6 @@ let CalculatorContext = (function () {
         this.operatorEntered = (operator) => {
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
-            
         }
     }
     Operand1EnteringState.prototype = new State;
@@ -62,40 +56,32 @@ let CalculatorContext = (function () {
     /**
      * OperatorEnteredState extends State
      */
-    function OperatorEnteredState() {
-        this.context = ctx;
-        onStateChange(this, "Operator State Entered");
+    function OperatorEnteredState(operator) {
+        onStateChange(ctx, "Operator State Entered");
         this.operator = null;
-        this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
-        tokens.push(this.token);
         this.equalsentered = false;
+        
+        this.operatorEntered(operator);
 
         this.operandEntered = (operand) => {
-            if(this.equalsentered)
-            {
-                state = new ReadyState();
-                state.operandEntered(operand);
-                return;
-            }
             displayBuffer.clear();
-            if (operand) {
-                operatorStack.push(this.operator);
-                state = new Operand2EnteringState();
-                state.operandEntered(operand);
-                return;
-            }
-            displayBuffer.insertChar(0);
+            operatorStack.push(this.operator);
+            state = new Operand2EnteringState();
+            state.operandEntered(operand);
         };
 
         this.operatorEntered = (operator) => {
-            if(this.equalsentered) this.equalsentered = !this.equalsentered;
-            
+            this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
+            tokens.push(this.token);
             this.operator = operator;
         }
 
         this.equalsEntered = (operator) => {
-            if(!this.equalsentered) this.equalsentered = !this.equalsentered;
-            if(!this.operator) return;
+            if(!this.equalsentered) {
+                this.equalsentered = !this.equalsentered;
+                this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
+                tokens.push(this.token);
+            } 
             // do '=' stuff
             operatorStack.push(this.operator);  
             tokens.push(this.token);
@@ -111,19 +97,16 @@ let CalculatorContext = (function () {
      * At this state the currentOperator is set
      */
     function Operand2EnteringState() {
-        this.context = ctx;
+        onStateChange(ctx, "Operand Two State Entered");
         this.operator = null;
         this.topToken = 0;
-        onStateChange(this, "Operand Two State Entered");
         this.equalsIsEntered = false;
 
         this.operandEntered = (operand) => {
             if (!this.equalsIsEntered)
-                displayBuffer.insertChar(operand);
-            else {
-                state = new ReadyState();
-                state.operandEntered(operand);
-            }
+                return displayBuffer.insertChar(operand);
+            state = new ReadyState();
+            state.operandEntered(operand);
         };
 
         this.operatorEntered = (operator) => {
@@ -144,9 +127,9 @@ let CalculatorContext = (function () {
             if(!this.equalsIsEntered) {
                 if(operatorStack.isEmpty())
                     throw new Error('Operator stack must npt be empty!')
+                this.equalsIsEntered=!this.equalsIsEntered;
                 this.topToken = displayBuffer.getValueAsFloat();
                 this.operator = operatorStack.pop();
-                this.equalsIsEntered=!this.equalsIsEntered;
             }
             operatorStack.push(this.operator);
             tokens.push(this.topToken);

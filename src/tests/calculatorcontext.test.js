@@ -10,10 +10,9 @@ beforeEach(() => {
 })
 
 test('do calculate', () => {
-    // c.addStateChangeListener((sender, msg) => {
-	// 	console.log(msg);
-	// 	//console.log(sender.context);
-	// });
+    ctx.addStateChangeListener((sender, msg) => {
+		console.log(msg);
+	});
     ctx.initialize();
     ctx.buttonClicked('9');
     ctx.buttonClicked('*');
@@ -22,6 +21,20 @@ test('do calculate', () => {
     
     expect(ctx.getTokens()).toBeDefined();
     expect(display.getValueAsFloat()).toBe('81');
+});
+test('do calculate 1', () => {
+    ctx.addStateChangeListener((sender, msg) => {
+		console.log(msg);
+	});
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('1');
+    ctx.buttonClicked('=');
+    
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('819');
 });
 
 test('calculation 2', () => {
@@ -58,6 +71,47 @@ test('calculation 4', () => {
     expect(ctx.getTokens()).toBeDefined();
     expect(display.getValueAsFloat()).toBe('729');
 });
+
+test('calculation 4.1', () => {
+    
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('=');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('531441');
+});
+
+test('calculation 4.2', () => {
+    
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('=');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('6561');
+});
+
+test('calculation 4.3', () => {
+    
+    ctx.initialize();
+    ctx.buttonClicked('8');
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('2');
+    ctx.buttonClicked('=');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('94');
+});
+
 
 test('calculation 5', () => {
     
