@@ -15,7 +15,6 @@ module.exports = {
         static: {
             directory: path.resolve(__dirname, "dist"),
         }
-        
     },
     mode: NODE_ENV,
     output: {

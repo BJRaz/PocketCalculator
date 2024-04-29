@@ -1,88 +1,193 @@
 const CalculatorContext = require('../calculatorcontext');
 const DisplayBuffer = require('../displaybuffer');
 
+let ctx = null;   // calculator context
+let display = null;   // reference to displayBuffer
+
+beforeEach(() => {
+    display = new DisplayBuffer();
+    ctx = new CalculatorContext(display);
+})
+
 test('do calculate', () => {
-    var d = new DisplayBuffer();
-    var c = new CalculatorContext(d);
     // c.addStateChangeListener((sender, msg) => {
 	// 	console.log(msg);
 	// 	//console.log(sender.context);
 	// });
-    c.initialize();
-    c.buttonClicked('9');
-    c.buttonClicked('*');
-    c.buttonClicked('9');
-    c.buttonClicked('=');
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('=');
     
-    expect(c.getTokens()).toBeDefined();
-    expect(d.getValueAsFloat()).toBe('81');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('81');
 });
 
 test('calculation 2', () => {
-    var d = new DisplayBuffer();
-    var c = new CalculatorContext(d);
-    // c.addStateChangeListener((sender, msg) => {
-	// 	console.log(msg);
-	// 	//console.log(sender.context);
-	// });
-    c.initialize();
-    c.buttonClicked('9');
-    c.buttonClicked('*');
-    c.buttonClicked('=');
+   
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('=');
     
-    expect(c.getTokens()).toBeDefined();
-    expect(d.getValueAsFloat()).toBe('81');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('81');
 });
 
 test('calculation 3', () => {
-    var d = new DisplayBuffer();
-    var c = new CalculatorContext(d);
-    // c.addStateChangeListener((sender, msg) => {
-	// 	console.log(msg);
-	// 	//console.log(sender.context);
-	// });
-    c.initialize();
-    c.buttonClicked('9');
-    c.buttonClicked('*');
-    c.buttonClicked('=');
-    c.buttonClicked('*');
-    c.buttonClicked('2');
-    c.buttonClicked('=');
-    expect(c.getTokens()).toBeDefined();
-    expect(d.getValueAsFloat()).toBe('162');
+   
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('2');
+    ctx.buttonClicked('=');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('162');
 });
 
 test('calculation 4', () => {
-    var d = new DisplayBuffer();
-    var c = new CalculatorContext(d);
-    // c.addStateChangeListener((sender, msg) => {
-	// 	console.log(msg);
-	// 	//console.log(sender.context);
-	// });
-    c.initialize();
-    c.buttonClicked('9');
-    c.buttonClicked('*');
-    c.buttonClicked('=');
-    c.buttonClicked('=');
-    expect(c.getTokens()).toBeDefined();
-    expect(d.getValueAsFloat()).toBe('729');
+    
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('=');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('729');
 });
 
 test('calculation 5', () => {
-    var d = new DisplayBuffer();
-    var c = new CalculatorContext(d);
-    // c.addStateChangeListener((sender, msg) => {
-	// 	console.log(msg);
-	// 	//console.log(sender.context);
-	// });
-    c.initialize();
-    c.buttonClicked('9');
-    c.buttonClicked('*');
-    c.buttonClicked('=');
-    c.buttonClicked('+');
-    c.buttonClicked('4');
-    c.buttonClicked('=');
+    
+    ctx.initialize();
+    ctx.buttonClicked('9');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('4');
+    ctx.buttonClicked('=');
 
-    expect(c.getTokens()).toBeDefined();
-    expect(d.getValueAsFloat()).toBe('85');
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('85');
+});
+
+test('calculation 6', () => {
+    
+    ctx.initialize();
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('*');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('=');
+
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('0');
+});
+
+test('calculation 7', () => {
+    
+    ctx.initialize();
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('=');
+    
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('0');
+});
+
+test('calculation 8', () => {
+   
+    ctx.initialize();
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('=');
+    
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('3');
+});
+
+test('calculation 9', () => {
+   
+    ctx.initialize();
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('=');
+
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('3');
+});
+
+
+test('calculation 10', () => {
+   
+    ctx.initialize();
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('=');
+
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('3');
+});
+
+test('calculation 10', () => {
+   
+    ctx.initialize();
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('=');
+
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('6');
+});
+
+test('calculation 11', () => {
+    ctx.initialize();
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('0');
+    ctx.buttonClicked('=');
+    ctx.buttonClicked('=');
+
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('3');
+});
+
+test('calculation 12', () => {
+    ctx.initialize();
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('ca');
+    ctx.buttonClicked('=');
+
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('0');
+});
+
+test('calculation 13', () => {
+    ctx.initialize();
+    ctx.buttonClicked('3');
+    ctx.buttonClicked('ca');
+    ctx.buttonClicked('+');
+    ctx.buttonClicked('1');
+    ctx.buttonClicked('=');
+
+    expect(ctx.getTokens()).toBeDefined();
+    expect(display.getValueAsFloat()).toBe('1');
 });

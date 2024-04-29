@@ -28,11 +28,11 @@ let CalculatorContext = (function () {
         tokens = new Stack();
         operatorStack = new Stack();
         this.context = ctx;
-        onStateChange(this, "Ready state entered .. ");
+        onStateChange(this, "Ready State Entered");
 
         this.operandEntered = (operand) => {
             displayBuffer.clear();
-            if (operand != "0") {
+            if (operand) {
                 state = new Operand1EnteringState();
                 state.operandEntered(operand);
                 return;
@@ -46,7 +46,7 @@ let CalculatorContext = (function () {
      */
     function Operand1EnteringState() {
         this.context = ctx;
-        onStateChange(this, "Operand One Entering State");
+        onStateChange(this, "Operand One State Entered");
 
         this.operandEntered = (operand) => {
             displayBuffer.insertChar(operand);
@@ -64,7 +64,7 @@ let CalculatorContext = (function () {
      */
     function OperatorEnteredState() {
         this.context = ctx;
-        onStateChange(this, "Operator Entered State");
+        onStateChange(this, "Operator State Entered");
         this.operator = null;
         this.token = displayBuffer.getValueAsFloat();   // store the token from previous state
         tokens.push(this.token);
@@ -78,7 +78,7 @@ let CalculatorContext = (function () {
                 return;
             }
             displayBuffer.clear();
-            if (operand != "0") {
+            if (operand) {
                 operatorStack.push(this.operator);
                 state = new Operand2EnteringState();
                 state.operandEntered(operand);
@@ -88,7 +88,6 @@ let CalculatorContext = (function () {
         };
 
         this.operatorEntered = (operator) => {
-            console.log(operator);
             if(this.equalsentered) this.equalsentered = !this.equalsentered;
             
             this.operator = operator;
@@ -114,8 +113,8 @@ let CalculatorContext = (function () {
     function Operand2EnteringState() {
         this.context = ctx;
         this.operator = null;
-        this.topToken = this.bottomToken = 0;
-        onStateChange(this, "Operand Two Entering State");
+        this.topToken = 0;
+        onStateChange(this, "Operand Two State Entered");
         this.equalsIsEntered = false;
 
         this.operandEntered = (operand) => {
@@ -131,10 +130,8 @@ let CalculatorContext = (function () {
             // at this state to operands exists 
             if(this.equalsIsEntered) {
                 // result is allready in the tokens variable.
-                console.log('do stuff');
                 state = new Operand1EnteringState();
-                state.operatorEntered(operator);
-                return;
+                return state.operatorEntered(operator);
             }
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
@@ -145,6 +142,8 @@ let CalculatorContext = (function () {
 
         this.equalsEntered = (operator) => {
             if(!this.equalsIsEntered) {
+                if(operatorStack.isEmpty())
+                    throw new Error('Operator stack must npt be empty!')
                 this.topToken = displayBuffer.getValueAsFloat();
                 this.operator = operatorStack.pop();
                 this.equalsIsEntered=!this.equalsIsEntered;
@@ -162,11 +161,15 @@ let CalculatorContext = (function () {
 
     // postfix notation calculation...
     function doCalculate(tokensstack) {
+        if(tokensstack.isEmpty())
+            throw new Error('doCalculate: Can\'t calculate on an empty stack of tokens');
+        if(operatorStack.isEmpty())
+            throw new Error('doCalculate: Can\'t calculate on an empty stack of operators')
         
-        let operator = operatorStack.pop();
         do {
-            var op2 = parseFloat(tokensstack.pop());
-            var op1 = parseFloat(tokensstack.pop());
+            let operator = operatorStack.pop();
+            let op2 = parseFloat(tokensstack.pop());
+            let op1 = parseFloat(tokensstack.pop());
             switch (operator) {
                 case "+": tokensstack.push(op1 + op2); break;
                 case "*": tokensstack.push(op1 * op2); break;
@@ -175,7 +178,7 @@ let CalculatorContext = (function () {
                 default:
                     throw new Error('Operator not accepted: "' + operator + '"')
             }
-        } while (operator = operatorStack.pop());
+        } while (!operatorStack.isEmpty());
     };
 
     function reset() {
