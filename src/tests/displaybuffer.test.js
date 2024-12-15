@@ -1,4 +1,4 @@
-const DisplayBuffer = require('../displaybuffer');
+const DisplayBuffer = require('../js/displaybuffer');
 
 let display = null;   // reference to displayBuffer
 

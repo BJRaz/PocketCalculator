@@ -1,5 +1,5 @@
-const CalculatorContext = require('../calculatorcontext');
-const DisplayBuffer = require('../displaybuffer');
+const CalculatorContext = require('../js/calculatorcontext');
+const DisplayBuffer = require('../js/displaybuffer');
 
 let ctx = null;   // calculator context
 let display = null;   // reference to displayBuffer
