@@ -298,7 +298,7 @@ test('calculation 15.2', () => {
     expect(display.getValueAsString()).toBe('18');
 });
 
-test('calculation 15.2', () => {
+test('calculation 15.3', () => {
     ctx.initialize();
     ctx.buttonClicked('2');
     ctx.buttonClicked('/');
