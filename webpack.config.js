@@ -8,7 +8,7 @@ const {
 
 module.exports = {
     entry: {
-        bundle: './src/main.js'
+        bundle: './src/js/main.js'
     },
     devtool: 'eval-source-map',
     devServer:{

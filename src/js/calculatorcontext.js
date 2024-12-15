@@ -1,5 +1,5 @@
-//import { Stack } from './stack';
 const Stack = require('./stack');
+
 /**
  * CalculatorContext
  */
@@ -7,9 +7,9 @@ let CalculatorContext = (function () {
     var operatorStack = null;               // this is an array operating as a stack
     var displayBuffer = null;               // new DisplayBuffer();
     var stateChangeListeners = [];          // event-listeners
-    var tokens = [];                        // the combined operands into number tokens i.e. 42, 17.5 etc.
+    var tokens = null;                      // the combined operands into number tokens i.e. 42, 17.5 etc.
     var state = null;
-    var ctx = null;
+    var ctx = null;                         // reference to context used from inner state-classes
 
 
     function precedence(token) {
@@ -117,7 +117,7 @@ let CalculatorContext = (function () {
             super();
             onStateChange(ctx, "Operand Two State Entered");
             this.operator = null;
-            this.topToken = 0;
+            this.topToken = null;
             this.equalsIsEntered = false;
         }
 
@@ -125,7 +125,6 @@ let CalculatorContext = (function () {
             if (!this.equalsIsEntered) {
                 return displayBuffer.insertChar(operand);
             }
-                
             state = new ReadyState();
             state.operandEntered(operand);
         };
@@ -139,13 +138,11 @@ let CalculatorContext = (function () {
                 return state.operatorEntered(operator);
             }
             
-            this.doSingleCalc();
+            this.doPrecedenceCalc();
 
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
-            // doCalculate(tokens);
-            // displayBuffer.clear();
-            // displayBuffer.insertString(tokens.top());
+
         };
 
         equalsEntered = (operator) => {
@@ -163,7 +160,7 @@ let CalculatorContext = (function () {
             displayBuffer.insertString(tokens.top());
         };
 
-        doSingleCalc() {
+        doPrecedenceCalc() {
             if (!operatorStack.isEmpty()) {
                 switch (operatorStack.top()) {
                     case '*':
@@ -219,12 +216,13 @@ let CalculatorContext = (function () {
         displayBuffer.clear();
         displayBuffer.insertChar('0');
         operatorStack = new Stack;
+        tokens = new Stack;
         state = new ReadyState();
     };
 
-    function onStateChange(state, msg) {
+    function onStateChange(calculatorcontext, msg) {
         for (var i in stateChangeListeners)
-            stateChangeListeners[i](state, msg);
+            stateChangeListeners[i](calculatorcontext, msg);
     };
 
     let buttonClicked = function (elemId) {
