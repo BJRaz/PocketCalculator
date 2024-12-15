@@ -37,6 +37,7 @@ function init() {
 window.onload = init;
 
 function updateDisplay(sender, value) {
+	// console.log(sender.getValueAsString());
 	input.value = (value);
 }
 

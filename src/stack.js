@@ -1,6 +1,6 @@
 function Stack() {
 
-    let internal = new Array(0);
+    let internal = new Array();
 
     this.pop = () => {
         return internal.pop();

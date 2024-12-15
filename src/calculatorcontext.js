@@ -7,9 +7,20 @@ let CalculatorContext = (function () {
     var operatorStack = null;               // this is an array operating as a stack
     var displayBuffer = null;               // new DisplayBuffer();
     var stateChangeListeners = [];          // event-listeners
-    var tokens = [];                      // the combined operands into number tokens i.e. 42, 17.5 etc.
+    var tokens = [];                        // the combined operands into number tokens i.e. 42, 17.5 etc.
     var state = null;
     var ctx = null;
+
+
+    function precedence(token) {
+        switch(token) {
+            case '*':
+            case '/':
+                return 1;
+            default:
+                return 0;   // if token = '+' or '-'
+        }
+    }
 
     /**
      * Base State class
@@ -54,6 +65,7 @@ let CalculatorContext = (function () {
         };
 
         operatorEntered = (operator) => {
+            tokens.push(displayBuffer.getValueAsString());
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
         };
@@ -78,16 +90,14 @@ let CalculatorContext = (function () {
         };
 
         operatorEntered = (operator) => {
-            this.token = displayBuffer.getValueAsFloat(); // store the token from previous state
-            tokens.push(this.token);
             this.operator = operator;
         };
 
         equalsEntered = (operator) => {
             if (!this.equalsentered) {
                 this.equalsentered = !this.equalsentered;
-                this.token = displayBuffer.getValueAsFloat(); // store the token from previous state
-                tokens.push(this.token);
+                this.token = displayBuffer.getValueAsString(); // store the token from previous state
+                // tokens.push(this.token);
             }
             // do '=' stuff
             operatorStack.push(this.operator);
@@ -112,32 +122,38 @@ let CalculatorContext = (function () {
         }
 
         operandEntered = (operand) => {
-            if (!this.equalsIsEntered)
+            if (!this.equalsIsEntered) {
                 return displayBuffer.insertChar(operand);
+            }
+                
             state = new ReadyState();
             state.operandEntered(operand);
         };
 
         operatorEntered = (operator) => {
+            tokens.push(displayBuffer.getValueAsString());
             // at this state to operands exists 
             if (this.equalsIsEntered) {
                 // result is allready in the tokens variable.
                 state = new Operand1EnteringState();
                 return state.operatorEntered(operator);
             }
+            
+            this.doSingleCalc();
+
             state = new OperatorEnteredState();
             state.operatorEntered(operator);
-            doCalculate(tokens);
-            displayBuffer.clear();
-            displayBuffer.insertString(tokens.top());
+            // doCalculate(tokens);
+            // displayBuffer.clear();
+            // displayBuffer.insertString(tokens.top());
         };
 
         equalsEntered = (operator) => {
             if (!this.equalsIsEntered) {
                 if (operatorStack.isEmpty())
-                    throw new Error('Operator stack must npt be empty!');
+                    throw new Error('Operator stack must not be empty!');
                 this.equalsIsEntered = !this.equalsIsEntered;
-                this.topToken = displayBuffer.getValueAsFloat();
+                this.topToken = displayBuffer.getValueAsString();
                 this.operator = operatorStack.pop();
             }
             operatorStack.push(this.operator);
@@ -146,12 +162,39 @@ let CalculatorContext = (function () {
             displayBuffer.clear();
             displayBuffer.insertString(tokens.top());
         };
+
+        doSingleCalc() {
+            if (!operatorStack.isEmpty()) {
+                switch (operatorStack.top()) {
+                    case '*':
+                        {
+                            let operand2 = parseFloat(tokens.pop());
+                            let operand1 = parseFloat(tokens.pop());
+                            tokens.push(operand1 * operand2);
+                            operatorStack.pop();
+                            displayBuffer.clear();
+                            displayBuffer.insertString(tokens.top());
+                            break;
+                        }
+                    case '/':
+                        {
+                            let operand2 = parseFloat(tokens.pop());
+                            let operand1 = parseFloat(tokens.pop());
+                            tokens.push(operand1 / operand2);
+                            operatorStack.pop();
+                            displayBuffer.clear();
+                            displayBuffer.insertString(tokens.top());
+                            break;
+                        }
+                }
+            }
+        }
     }
 
     // -----------------------------------------
 
     // postfix notation calculation...
-    function doCalculate(tokensstack) {
+    function doCalculate(tokensstack, loop=true) {
         if (tokensstack.isEmpty())
             throw new Error('doCalculate: Can\'t calculate on an empty stack of tokens');
         if (operatorStack.isEmpty())
@@ -162,9 +205,9 @@ let CalculatorContext = (function () {
             let op2 = parseFloat(tokensstack.pop());
             let op1 = parseFloat(tokensstack.pop());
             switch (operator) {
-                case "+": tokensstack.push(op1 + op2); break;
                 case "*": tokensstack.push(op1 * op2); break;
                 case "/": tokensstack.push(op1 / op2); break;
+                case "+": tokensstack.push(op1 + op2); break;
                 case "-": tokensstack.push(op1 - op2); break;
                 default:
                     throw new Error('Operator not accepted: "' + operator + '"')
@@ -174,7 +217,7 @@ let CalculatorContext = (function () {
 
     function reset() {
         displayBuffer.clear();
-        displayBuffer.insertChar(0);
+        displayBuffer.insertChar('0');
         operatorStack = new Stack;
         state = new ReadyState();
     };
@@ -187,19 +230,6 @@ let CalculatorContext = (function () {
     let buttonClicked = function (elemId) {
 
         switch (elemId) {
-            case "0":
-            case "1":
-            case "2":
-            case "3":
-            case "4":
-            case "5":
-            case "6":
-            case "7":
-            case "8":
-            case "9":
-            case ".":
-                state.operandEntered(elemId);
-                break;
             case "-":
             case "*":
             case "/":
@@ -214,8 +244,9 @@ let CalculatorContext = (function () {
             case "ca":
                 reset();
                 break;
-            default:
-                alert("Not implemented");
+            default:    // all others as 0,1,2, etc...
+                state.operandEntered(elemId);
+                break;
 
         }
     };
